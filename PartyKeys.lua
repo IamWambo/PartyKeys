@@ -4,25 +4,6 @@
 local addonName = "PartyKeys"
 
 -- ============================================================
--- Dungeon Name Abbreviations
--- ============================================================
-
-local DUNGEON_ABBREV = {
-    ["Magisters' Terrace"] = "MT",
-    ["Maisara Caverns"] = "MC",
-    ["Nexus-Point Xenas"] = "XENAS",
-    ["Windrunner Spire"] = "SPIRE",
-    ["Algeth'ar Academy"] = "AA",
-    ["Pit of Saron"] = "PIT",
-    ["Seat of the Triumvirate"] = "SEAT",
-    ["Skyreach"] = "SKY"
-}
-
-local function ShortName(dungeonName)
-    return DUNGEON_ABBREV[dungeonName] or dungeonName
-end
-
--- ============================================================
 -- Keystone
 -- ============================================================
 
@@ -109,6 +90,16 @@ local function RebuildPartyButtons()
     local count = 0
 
     local allKeys = {}
+
+    local myKeystone = GetPlayerKeystone()
+    if myKeystone then
+        table.insert(allKeys, {
+            playerName  = UnitName("player"),
+            activityID  = myKeystone.activityID,
+            level       = myKeystone.level,
+            dungeonName = myKeystone.dungeonName,
+        })
+    end
 
     for playerName, keyData in pairs(partyKeys) do
         table.insert(allKeys, {
@@ -209,6 +200,17 @@ end)
 
 local function UpdateButtonState()
     local allKeys = {}
+    local myKeystone = GetPlayerKeystone()
+
+    if myKeystone then
+        table.insert(allKeys, {
+            playerName  = UnitName("player"),
+            activityID  = myKeystone.activityID,
+            level       = myKeystone.level,
+            dungeonName = myKeystone.dungeonName,
+        })
+    end
+
     for playerName, keyData in pairs(partyKeys) do
         table.insert(allKeys, {
             playerName = Ambiguate(playerName, "short"),
@@ -234,11 +236,10 @@ end
 -- ============================================================
 
 LFGListFrame.EntryCreation:HookScript("OnShow", function()
-    if IsInGroup() then
-        RequestPartyKeys()
-        RebuildPartyButtons()
-        panel:Show()
-    end
+    RebuildPartyButtons()
+    RequestPartyKeys()
+    panel:Show()
+    UpdateButtonState()
 end)
 
 LFGListFrame.EntryCreation:HookScript("OnHide", function()
@@ -253,25 +254,3 @@ local frame = LFGListFrame.EntryCreation.Name
 frame:HookScript("OnTextChanged", function(self, isUserInput)
     UpdateButtonState()
 end)
-
-SLASH_PARTYKEYS1 = "/pk"
-SlashCmdList["PARTYKEYS"] = function(cmd)
-    if cmd == "test" then
-        partyKeys["TestPlayer-Realm"] = {
-            activityID  = 1760,
-            level       = 15,
-            dungeonName = "Seat of the Triumvirate",
-        }
-        partyKeys["AnotherPlayer-Realm"] = {
-            activityID  = 1761,
-            level       = 10,
-            dungeonName = "Skyreach",
-        }
-        RebuildPartyButtons()
-        print("[PartyKeys] Test data injected.")
-    elseif cmd == "clear" then
-        partyKeys = {}
-        RebuildPartyButtons()
-        print("[PartyKeys] Cleared.")
-    end
-end
