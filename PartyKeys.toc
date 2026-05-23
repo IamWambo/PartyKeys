@@ -1,0 +1,7 @@
+## Interface: 120005
+## Version: 1.0.0
+## Title: PartyKeys
+## Notes: List my party members keys in LFG
+## Author: Wambo
+
+PartyKeys.lua
